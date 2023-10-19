@@ -1,0 +1,13 @@
+# Python
+*.pyc
+*.pyo
+
+# Django
+static/
+
+# Local development
+.env
+.idea/
+.vscode/
+venv/
+m

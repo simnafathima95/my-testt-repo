@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <title>Login Page</title>
+    <style>
+        body {
+            background-color: #ffffff;
+        }
+        .login-box {
+            margin-top: 100px;
+            border: 1px solid #ccc;
+            padding: 20px;
+            border-radius: 5px;
+        },
+        .login-heading {
+            font-size: 24px;
+            font-weight: bold;
+            color: blue;
+
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="row">
+        <div class="col-md-12 text-center">
+            <h2 class="mb-4 login-heading">Employee Management</h2>
+        </div>
+        </div>
+        {% with messages = get_flashed_messages(with_categories=true) %}
+                <!-- Categories: success (green), info (blue), warning (yellow), danger (red) -->
+                {% if messages %}
+                {% for category, message in messages %}
+                <div class="alert alert-{{category}} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>                </div>
+                {% endfor %}
+                {% endif %}
+                {% endwith %}
+        <div class="row justify-content-center">
+            <div class="col-md-6 login-box">
+                        <form method="post" class="form">
+            {{ form.hidden_tag() }}
+            <div class="form-group">
+                <label for="{{ form.username.id }}">{{ form.username.label }}</label>
+                {{ form.username(class="form-control", placeholder="Email or Phone") }}
+            </div>
+            <div class="form-group">
+                <label for="{{ form.password.id }}">{{ form.password.label }}</label>
+                {{ form.password(class="form-control", placeholder="Password") }}
+            </div>
+            {{ form.submit(class="btn btn-primary") }}
+        </form>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+</body>
+</html>
+
+

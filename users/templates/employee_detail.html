@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Employee Dashboard</title>
+    <!-- Include Bootstrap CSS -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
+    <style>
+        /* Custom CSS for font color */
+        .employee-dashboard-title {
+            color: blue;
+        }
+        /* Style for the logout button */
+        .logout-button {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+        }
+    </style>
+</head>
+<body style="background-color: #fff;">
+    <div class="container mt-5">
+        <a href="{{ url_for('login_bp.logout') }}" class="btn btn-danger logout-button">Logout</a>
+        <div class="col-md-12 text-center">
+            <h2 class="mb-4 employee-dashboard-title">Employee Management | Role: {{current_user.role|capitalize}}</h2>
+        </div>
+        <div class="card">
+            <div class="card-body">
+                <h2><b>Employee Detail</b></h2>
+                <form method="POST">
+                    {{ form.hidden_tag() }}
+                    <div class="form-group">
+                        <label for="{{ form.name.id }}">{{ form.name.label }}</label>
+                        <input type="text" class="form-control" name="name" value="{{ employee.name }}" readonly>
+                    </div>
+                    <div class="form-group">
+                        <label for="{{ form.email.id }}">{{ form.email.label }}</label>
+                         <input type="text" class="form-control" name="email" value="{{ employee.email }}" readonly>
+                    </div>
+                    <div class="form-group">
+                        <label for="{{ form.phone.id }}">{{ form.phone.label }}</label>
+                        <input type="text" class="form-control" name="phone" value="{{ employee.phone }}" readonly>
+
+                    </div>
+                    <div class="form-group">
+                        <label for="{{ form.designation.id }}">{{ form.designation.label }}</label>
+                        <select class="form-control" name="designation" disabled>
+                            {% for choice, label in form.designation.choices %}
+                                <option value="{{ choice }}" {% if choice == employee.designation %}selected{% endif %}>{{ label }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="{{ form.department.id }}">{{ form.department.label }}</label>
+                        <select class="form-control" name="department" disabled>
+                            {% for choice, label in form.department.choices %}
+                                <option value="{{ choice }}" {% if choice == employee.department %}selected{% endif %}>{{ label }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="{{ form.manager.id }}">{{ form.manager.label }}</label>
+                        <select class="form-control" name="manager" disabled>
+                            {% for choice, label in form.manager.choices %}
+                                <option value="{{ choice }}" {% if choice == employee.manager %}selected{% endif %}>{{ label }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="{{ form.hired_date.id }}">{{ form.hired_date.label }}</label>
+                        <input type="text" class="form-control" name="hired_date" value="{{ employee.hired_date }}" readonly>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

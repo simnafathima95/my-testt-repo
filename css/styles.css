@@ -1,0 +1,19 @@
+.employee-dashboard-title {
+    color: blue;
+}
+/* Style for the logout button */
+.logout-button {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+}
+.small-search-form {
+    max-width: 300px;
+}
+.small-search-button {
+    width: 100px;
+}
+.search-filter {
+    display: flex;
+    justify-content: flex-end;
+}

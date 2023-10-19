@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Employee Dashboard</title>
+    <!-- Include Bootstrap CSS -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
+    <style>
+        /* Custom CSS for font color */
+        .employee-dashboard-title {
+            color: blue;
+        }
+        /* Style for the logout button */
+        .logout-button {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+        }
+    </style>
+</head>
+<body style="background-color: #fff;">
+    <div class="container mt-5">
+        <a href="{{ url_for('login_bp.logout') }}" class="btn btn-danger logout-button">Logout</a>
+        <div class="col-md-12 text-center">
+            <h2 class="mb-4 employee-dashboard-title">Employee Management | Role: {{current_user.role|capitalize}}</h2>
+        </div>
+                {% with messages = get_flashed_messages(with_categories=true) %}
+                <!-- Categories: success (green), info (blue), warning (yellow), danger (red) -->
+                {% if messages %}
+                {% for category, message in messages %}
+                <div class="alert alert-{{category}} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>                </div>
+                {% endfor %}
+                {% endif %}
+                {% endwith %}
+        <div class="card">
+            <div class="card-body">
+                <h2><b>Create Role</b></h2>
+                <form method="POST" action="">
+                    {{ form.csrf_token }}
+                    {{ form.hidden_tag() }}
+                    <div class="form-group">
+                        <label for="{{ form.name.id }}">{{ form.name.label }}</label>
+                        {{ form.name(class="form-control") }}
+                    </div>
+                    <div class="form-group">
+                        <label for="{{ form.permissions.id }}">{{ form.permissions.label }}</label>
+                        {{ form.permissions(class="form-control") }}
+                    </div>
+                    <div class="form-group">
+                        {{ form.submit(class="btn btn-primary") }}
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"></script>
+</body>
+</html>
