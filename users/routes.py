@@ -5,7 +5,7 @@ import gridfs
 from bson import ObjectId
 
 import openpyxl
-from flask import Blueprint, render_template, request, url_for, redirect, flash, session, Response, send_file
+from flask import Blueprint, render_template, request, url_for, redirect, flash, session, Response
 
 from flask_login import login_user, current_user, logout_user
 
@@ -139,7 +139,7 @@ def manager_dashboard():
         employees=employees, department_choices=constants.department_choices, designation_choices=constants.designation_choices)
 
 
-@manager_bp.route('/create', methods=('GET', 'POST'))   # Focus here
+@manager_bp.route('/create', methods=('GET', 'POST'))
 @utils.role_required(["admin"])
 def create_manager():
     if not utils.get_manager_role():
@@ -191,7 +191,7 @@ def employee_detail(employee_id):
     return redirect(url_for('login_bp.login'))
 
 
-@employee_bp.route('/create', methods=('GET', 'POST'))   # Focus here
+@employee_bp.route('/create', methods=('GET', 'POST'))
 @utils.role_required(["admin", "manager"])
 def create_employee():
     if not utils.get_employee_role():
@@ -218,7 +218,7 @@ def create_employee():
     return render_template('employee_create.html', form=form)
 
 
-@employee_bp.route('/edit/<employee_id>', methods=('GET', 'POST'))   # Focus here
+@employee_bp.route('/edit/<employee_id>', methods=('GET', 'POST'))
 @utils.role_required(["admin", "manager"])
 def edit_employee(employee_id):
     form = EmployeeForm()
@@ -255,13 +255,18 @@ def filter_employees():
     designation = request.form.get('designation')
     department = request.form.get('department')
     employees = utils.get_employees()
-    filtered_employees = [employee for employee in employees if
-                          employee['designation'] == designation and employee['department'] == department]
-    for employee in filtered_employees:
+    if designation and department:
+        employees = [employee for employee in employees if
+                     employee['designation'] == designation and employee['department'] == department]
+    elif designation:
+        employees = [employee for employee in employees if employee['designation'] == designation]
+    elif department:
+        employees = [employee for employee in employees if employee['department'] == department]
+    for employee in employees:
         employee['_id'] = str(employee['_id'])
         employee['manager'] = str(employee['manager'])
         employee['role_id'] = str(employee['role_id'])
-    session['filtered_employees'] = filtered_employees
+    session['filtered_employees'] = employees
     if current_user.role == "manager":
         return redirect(url_for('manager_bp.manager_dashboard'))
     return redirect(url_for('admin_bp.admin_dashboard'))
@@ -302,16 +307,57 @@ def export(export_type):
     fs = gridfs.GridFS(mongo.db)
     headers = ['Name', 'Email', 'Phone', 'Manager', 'Designation', 'Department']
     if export_type == 'csv':
-        pass
+        output = io.StringIO()
+        csv_writer = csv.writer(output)
+        csv_writer.writerow(headers)
+        for employee in employees:
+            csv_writer.writerow(
+                [employee['name'], employee['email'], employee['phone'], employee['manager_name'], employee['designation'],
+                 employee['department']])
+        output.seek(0)
+        csv_data = output.getvalue().encode('utf-8')
+        fs.put(csv_data, filename='employees.csv')
+        response = Response(
+            output,
+            content_type='text/csv',
+            headers={'Content-Disposition': 'attachment; filename=employees.csv'}
+        )
+        return response
     elif export_type == 'json':
-        pass
+        employees = utils.modify_employee_data(employees)
+        data_to_download = json.dumps(employees, indent=4)
+        data_bytes = data_to_download.encode('utf-8')
+        fs.put(data_bytes, filename='employees.json')
+        response = Response(
+            data_bytes,
+            content_type='application/json',
+            headers={'Content-Disposition': 'attachment; filename=employees.json'}
+        )
+        return response
     elif export_type == 'xlsx':
-        pass
+        workbook = openpyxl.Workbook()
+        worksheet = workbook.active
+        for col, header in enumerate(headers, 1):
+            worksheet.cell(row=1, column=col, value=header)
+        for row, employee in enumerate(employees, 2):
+            for col, header in enumerate(headers, 1):
+                value = employee.get(header.lower()) if header != "Manager" else employee.get("manager_name", "")
+                worksheet.cell(row=row, column=col, value=value)
+        output = io.BytesIO()
+        workbook.save(output)
+        output.seek(0)
+        xlsx_data = output.getvalue()
+        fs.put(xlsx_data, filename="employees.xlsx")
+        response = Response(
+            output.read(),
+            content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            headers={'Content-Disposition': 'attachment; filename=employees.xlsx' }
+        )
+        return response
 
 
-@login_bp.route('/', methods=('GET', 'POST'))   # Focus here
+@login_bp.route('/', methods=('GET', 'POST'))
 def login():
-    logout()
     form = LoginForm()
     if form.validate_on_submit():
         username = form.username.data
@@ -337,10 +383,11 @@ def login():
             return redirect(url_for('admin_bp.admin_home'))
         else:
             flash('Login failed. Check your credentials.', 'danger')
+    logout()
     return render_template('login.html', form=form)
 
 
-@login_bp.route('/logout')   # Focus here
+@login_bp.route('/logout')
 def logout():
     session.pop('username', None)
     session.pop('user_id', None)

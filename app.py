@@ -1,11 +1,8 @@
-from bson import ObjectId
-
 from flask import Flask
 from flask_login import LoginManager
 
-from config import mongo, Config
+from config import mongo, Config, load_user
 from users import routes
-from users.user import User
 
 
 app = Flask(__name__)
@@ -14,16 +11,7 @@ app.config.from_object(Config)
 mongo.init_app(app)
 login_manager = LoginManager()
 login_manager.init_app(app)
-
-
-@login_manager.user_loader
-def load_user(user_id):
-    print("eeeeeeeee")
-    user_id = ObjectId(user_id)
-    user_data = mongo.db.users.find_one({"_id": user_id})
-    user = User(user_id, username=user_data.get("name"), role=mongo.db.roles.find_one({'_id': user_data['role_id']})["name"])
-    return user
-
+login_manager.user_loader(load_user)
 
 app.register_blueprint(routes.admin_bp)
 app.register_blueprint(routes.permissions_bp)

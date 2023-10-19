@@ -67,12 +67,11 @@
                     </button>
                 </div>
                 <div class="modal-body">
-                    <!-- Filter options for designation and department -->
                     <form method="POST" action="{{ url_for('employee_bp.filter_employees') }}">
                         <div class="form-group">
                             <label for="designation">Designation</label>
                             <select class="form-control" id="designation" name="designation">
-                                <!-- Add designation options dynamically if needed -->
+                                <option value="">Select Designation</option>
                                 {% for each in designation_choices %}
                                 <option value="{{each[0]}}">{{each[1]}}</option>
                                 {% endfor %}
@@ -81,6 +80,7 @@
                         <div class="form-group">
                             <label for="department">Department</label>
                             <select class="form-control" id="department" name="department">
+                                <option value="">Select Department</option>
                                 {% for each in department_choices %}
                                 <option value="{{each[0]}}">{{each[1]}}</option>
                                 {% endfor %}

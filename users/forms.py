@@ -8,9 +8,7 @@ import constants
 class LoginForm(FlaskForm):
     username = StringField('Email or Phone', validators=[
         DataRequired(),
-        Length(min=5, max=100),
-        # Regexp(r'^\w+([-+.]\w+)*@\w+([-.]\w+)*\.\w+([-.]\w+)*$|^(\d{3}-\d{3}-\d{4})$',
-        #        message='Invalid email or phone number')
+        Length(min=5, max=100)
     ])
     password = PasswordField('Password', validators=[DataRequired()])
     submit = SubmitField('Login')
@@ -19,10 +17,10 @@ class LoginForm(FlaskForm):
 class ManagerForm(FlaskForm):
     name = StringField('Name', validators=[
         DataRequired(),
-        Length(min=5, max=50)
+        Length(min=3, max=50)
     ])
     email = StringField('Email', validators=[DataRequired(), Email()])
-    phone = StringField('Phone', validators=[DataRequired(), Length(max=20)])
+    phone = StringField('Phone', validators=[DataRequired(), Length(min=6, max=20)])
     password = PasswordField('Password', validators=[DataRequired(), Length(min=8)])
     hired_date = DateField('Hired Date', format='%Y-%m-%d', validators=[DataRequired()])
     submit = SubmitField('Submit')
@@ -31,10 +29,10 @@ class ManagerForm(FlaskForm):
 class EmployeeForm(FlaskForm):
     name = StringField('Name', validators=[
         DataRequired(),
-        Length(min=5, max=50)
+        Length(min=3, max=50)
     ])
     email = StringField('Email', validators=[DataRequired(), Email()])
-    phone = StringField('Phone', validators=[DataRequired(), Length(max=20)])
+    phone = StringField('Phone', validators=[DataRequired(), Length(min=6, max=20)])
     password = PasswordField('Password', validators=[DataRequired(), Length(min=8)])
     department = SelectField('Department', choices=constants.department_choices, validators=[DataRequired()])
     designation = SelectField('Designation', choices=constants.designation_choices, validators=[DataRequired()])
