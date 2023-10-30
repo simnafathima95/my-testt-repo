@@ -97,3 +97,15 @@ def modify_employee_data(data):
             if isinstance(item[each], ObjectId):
                 item[each] = str(item[each])
     return data
+
+
+def get_role_data(filter_role):
+    role = mongo.db.roles.find_one({'name': filter_role})
+    permissions_ids = role.get('permissions_ids', [])
+    permission_names = []
+    for each in permissions_ids:
+        permission = mongo.db.permissions.find_one({'_id': each})
+        if permission:
+            permission_names.append(permission['name'])
+            role['permission_names'] = permission_names
+    return {"name": role.get("name"), "permission_names":  role.get('permission_names')}

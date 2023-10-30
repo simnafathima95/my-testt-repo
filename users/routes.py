@@ -1,13 +1,13 @@
 import csv
 import io
 import json
-import gridfs
-from bson import ObjectId
 
+from bson import ObjectId
+import gridfs
 import openpyxl
 from flask import Blueprint, render_template, request, url_for, redirect, flash, session, Response
 
-from flask_login import login_user, current_user, logout_user
+from flask_login import login_user, current_user, logout_user, login_required
 
 import constants
 from config import mongo
@@ -97,6 +97,8 @@ def create_role():
 def delete_role(role_id):
     role_id = ObjectId(role_id)
     mongo.db.roles.delete_one({'_id': role_id})
+    cursor_obj = mongo.db.users.find({"role_id": role_id}, {"_id": 1})
+    [mongo.db.users.update_many({"manager": each["_id"]}, {"$set": {"manager": None}}) for each in cursor_obj]
     mongo.db.users.update_many(
         {"role_id": role_id},
         {"$set": {"role_id": None}}
@@ -172,7 +174,10 @@ def employee_dashboard():
     user = mongo.db.users.find_one({"_id": user_id})
     if user:
         user['_id'] = str(user['_id'])
-        user['manager'] = mongo.db.users.find_one({"_id": user["manager"]})["name"]
+        if user.get('manager'):
+            user['manager'] = mongo.db.users.find_one({"_id": user["manager"]})["name"]
+        else:
+            user["manager"] = ""
         return render_template('employee_dashboard.html', user=user)
     flash('Employee details not found.', 'danger')
     return redirect(url_for('login_bp.login'))
@@ -199,6 +204,10 @@ def create_employee():
         if current_user.role == "manager":
             return redirect(url_for('manager_bp.manager_dashboard'))
         return redirect(url_for('admin_bp.admin_dashboard'))
+    # role_detail = utils.get_role_data(current_user.role)
+    # if not 'admin_access' in role_detail.get('permission_names', []) and not 'add_employee' in role_detail.get('permisision_names', []):
+    #     flash("You don't have permission to access this page.", 'danger')
+    #     return redirect(url_for('login_bp.login'))
     form = EmployeeForm()
     form.manager.choices = [(manager.get('_id'), manager.get('name')) for manager in utils.get_managers()]
     if form.validate_on_submit():
@@ -312,8 +321,8 @@ def export(export_type):
         csv_writer.writerow(headers)
         for employee in employees:
             csv_writer.writerow(
-                [employee['name'], employee['email'], employee['phone'], employee['manager_name'], employee['designation'],
-                 employee['department']])
+                [employee.get('name'), employee.get('email'), employee.get('phone'), employee.get('manager_name'),
+                 employee.get('designation'), employee.get('department')])
         output.seek(0)
         csv_data = output.getvalue().encode('utf-8')
         fs.put(csv_data, filename='employees.csv')
